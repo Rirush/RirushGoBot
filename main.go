@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/inconshreveable/go-keen"
 )
 
 const (
@@ -20,8 +21,15 @@ const (
 )
 
 var (
-	query = make(chan tgbotapi.MessageConfig)
+	keenClient = &keen.Client{WriteKey: os.Getenv("KEEN_MASTER"), ProjectID: os.Getenv("KEEN_PROJECT")}
+	query      = make(chan tgbotapi.MessageConfig)
 )
+
+type messageEvent struct {
+	UserID  int
+	Message string
+	Type    string
+}
 
 func initquery(bot *tgbotapi.BotAPI) {
 	sender := time.NewTicker(time.Millisecond * 34)
@@ -44,10 +52,13 @@ func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		log.Printf("Update(%d) skipped because it isn't a message", update.UpdateID)
 	}
 
+	event := messageEvent{UserID: update.Message.From.ID, Message: update.Message.Text}
+
 	log.Printf("Message(%d) with text %q received from @%s:%d", update.UpdateID, update.Message.Text, update.Message.From.UserName, update.Message.From.ID)
 
 	if update.Message.IsCommand() {
 		log.Printf("Message(%d) is command", update.UpdateID)
+		event.Type = "command"
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		msg.ParseMode = "markdown"
 		msg.DisableWebPagePreview = true
@@ -65,7 +76,10 @@ func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 
 		query <- msg
+	} else {
+		event.Type = "message"
 	}
+	keenClient.AddEvent("messages", &event)
 }
 
 // Running bot with webhook updates, status page, database and Keen.io analytics
