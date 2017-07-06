@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -37,18 +40,30 @@ func production() {
 	}()
 
 	bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv(envurl) + os.Getenv(envtoken)))
-	//router := gin.Default()
+	router := gin.Default()
 
 	// Status "page"
-	//router.GET("/", func(c *gin.Context) {
-	//	c.String(http.StatusOK, "UP")
-	//})
-	//router.POST("/", func(c *gin.Context) {
-	//	c.String(http.StatusOK, "UP")
-	//})
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "UP")
+	})
+	router.POST("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "UP")
+	})
 
-	updates := bot.ListenForWebhook("/" + os.Getenv(envtoken))
-	go http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
+	updates := make(chan tgbotapi.Update, bot.Buffer)
+
+	router.POST("/"+os.Getenv(envtoken), func(c *gin.Context) {
+		bytes, _ := ioutil.ReadAll(c.Request.Body)
+
+		var update tgbotapi.Update
+		json.Unmarshal(bytes, &update)
+
+		updates <- update
+
+		c.Status(http.StatusOK)
+	})
+
+	go router.Run("0.0.0.0:" + os.Getenv("PORT"))
 
 	for update := range updates {
 		go func() {
