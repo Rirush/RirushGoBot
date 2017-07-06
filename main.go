@@ -73,6 +73,9 @@ func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		case "help":
 			msg.Text = help()
+
+		default:
+			msg.Text = "Sorry, I don't know this command.\nList of all available commands can be requested with /help"
 		}
 
 		query <- msg
