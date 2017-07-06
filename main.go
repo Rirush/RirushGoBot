@@ -43,8 +43,8 @@ func initquery(bot *tgbotapi.BotAPI) {
 func help() string {
 	return "I can do this stuff:\n" +
 		"Show this help message with /help\n" +
-		"\nIf you found bug, report about it to [GitHub Issues](https://github.com/Rirush/RirushGoBot/issues) with 'Bug report' label\n" +
-		"If you have any ideas, you can tell me about them by creating [issue](https://github.com/Rirush/RirushGoBot/issues) with 'Feature request' label"
+		"\nIf you found bug, report about it to [GitHub Issues](https://github.com/Rirush/RirushGoBot/issues)\n" +
+		"If you have any ideas, you can tell me about them by creating [issue](https://github.com/Rirush/RirushGoBot/issues)"
 }
 
 func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
