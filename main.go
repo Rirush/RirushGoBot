@@ -43,6 +43,7 @@ func initquery(bot *tgbotapi.BotAPI) {
 func help() string {
 	return "I can do this stuff:\n" +
 		"Show this help message with /help\n" +
+		"Get track lyrics with /lyrics Artist - Track\n" +
 		"\nIf you found bug, report about it to [GitHub Issues](https://github.com/Rirush/RirushGoBot/issues)\n" +
 		"If you have any ideas, you can tell me about them by creating [issue](https://github.com/Rirush/RirushGoBot/issues)"
 }
@@ -73,6 +74,13 @@ func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		case "help":
 			msg.Text = help()
+
+		case "lyrics":
+			srcmsg := update.Message.Text
+			ents := *update.Message.Entities
+			arg := srcmsg[ents[0].Length+1:]
+			splitted := strings.Split(arg, " - ")
+			msg.Text = lyricsByAT(splitted[0], splitted[1])
 
 		default:
 			msg.Text = "Sorry, I don't know this command.\nList of all available commands can be requested with /help"
