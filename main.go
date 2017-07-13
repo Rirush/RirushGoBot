@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/inconshreveable/go-keen"
 )
 
 const (
@@ -83,7 +81,9 @@ func handle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			msg.Text = lyricsByAT(splitted[0], splitted[1])
 
 		default:
-			msg.Text = "Sorry, I don't know this command.\nList of all available commands can be requested with /help"
+			if update.Message.Chat.ID > 0 {
+				msg.Text = "Sorry, I don't know this command.\nList of all available commands can be requested with /help"
+			}
 		}
 
 		query <- msg
